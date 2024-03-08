@@ -9,13 +9,12 @@ lines = [line.strip() for line in lines_unrefined]
 
 
 
-
 global instrCounter
 global stackCounter
 global dataMemoryCounter
 
 PrgC = 0 # Program Counter
-PrgCMax = len(lines) -1
+PrgCMax = 4*(len(lines) -1)
 
 instrCounter = 0 #for tracking the numbers of instructions assembled don't exceed program memory
 stackCounter = 32 #for tracking variables don't exceed stack memory, we have only 32 registers
@@ -101,12 +100,38 @@ func3_dict = {
     'bgeu': '111'
 }
 
+# decimal to binary with sign ext converter
+def bin_ext_converter(n,bits):
+    n_1 = str(bin(n))
+    if n >= 0:
+        n_2 = '0' + n_1[2:]
+        if len(n_2) > bits:
+            print('Error: Illegal Imm out of bounds')
+            sys.exit()
+        else:
+            n_2 = '0'*(bits-len(n_2)) + n_2
+    else:
+        n_2 = '0'+ n_1[3:]
+        n_2 = ''.join('1' if b == '0' else '0' for b in n_2)
+        n_2 = str(bin(int(n_2,2)+1))
+        n_2 = n_2[2:]
+        if len(n_2)> bits:
+            print('Error: Illegal Imm out of bounds')
+            sys.exit()
+        else:
+            n_2 = '1'*(bits-len(n_2)) + n_2
+    return n_2
 
 def R_type_encoder(token_1):
+    global PrgC
     op_code = '0110011'
+    
     op_name = token_1[0]
     func3 = func3_dict[op_name]
     token_2 = token_1[1].split(",")
+    for i in token_2:
+        if i not in registers_dict:
+            print("Error: illegal register name used on line",int(PrgC/4))
     rd = registers_dict[token_2[0]]
     rs1 = registers_dict[token_2[1]]
     rs2 = registers_dict[token_2[2]]
@@ -117,14 +142,46 @@ def R_type_encoder(token_1):
 
     binstr = func7 + rs2 + rs1 + func3 + rd + op_code + '\n'
     outputfile.write(binstr)
-    global PrgC
-    PrgC = PrgC + 1
+
+    
+    PrgC = PrgC + 4
 
 
-
+#note some confusion in jalr right now
 def I_type_encoder(token_1):
+    global PrgC
+    op_code = '0110011'
+
+    op_name = token_1[0]
+    func3 = func3_dict[op_name]
+
+    token_2 = token_1[1].split(",") #token_2[0] has rd
+    rd = token_2[0]
+    if len(token_2) == 2:
+        token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
+        token_4 = token_3[1]          #token_4 has rs1)
+        token_4 = token_4[:-1]        #token_4 has rs1
+        rs1 = token_4
+        imm = bin_ext_converter(int(token_3[0]),12)
+
+    else:
+        rs1 = token_2[1]
+        imm = bin_ext_converter(int(token_2[2]),12)
+
+    if (rd not in registers_dict) or (rs1 not in registers_dict):
+        print("Error: illegal register name used on line",int(PrgC/4))
+        sys.exit()
+    rd = registers_dict[rd]
+    rs1 = registers_dict[rs1]
+
+    binstr = imm + rs1 + func3 + rd + op_code + '\n'
+    outputfile.write(binstr)
+
     
+    PrgC = PrgC + 4
+
     
+
 
 def S_type_encoder(token_1):
     pass
@@ -169,7 +226,7 @@ def instr_identifier(line):
     elif opname in J_type_instr:
         J_type_encoder(token_1)
     else:
-        print("Invalid instruction code on line",PrgC)
+        print("Invalid instruction name on line",int(PrgC/4))
         sys.exit()
 
 
@@ -179,12 +236,12 @@ def instr_identifier(line):
 
     
 
-
+#iterating of lines
 
 while(PrgC <= PrgCMax):
-    line = lines[PrgC]
+    line = lines[int(PrgC/4)]
     if(line == ""):
-        PrgC = PrgC+1
+        PrgC = PrgC+4
         continue
     instr_identifier(line)
 
@@ -193,8 +250,6 @@ while(PrgC <= PrgCMax):
 #dekh lenge iske logic bad me ek to last line of output file pr if lgake bhi check kr skte h
 print("Error: Virtual halt not used as last instruction")
 sys.exit(-1)
-
-
 
 
 
