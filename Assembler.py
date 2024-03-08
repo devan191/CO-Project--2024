@@ -151,14 +151,22 @@ def R_type_encoder(token_1):
 #note some confusion in jalr right now
 def I_type_encoder(token_1):
     global PrgC
-    op_code = '0110011'
 
     op_name = token_1[0]
+    if op_name == 'lw':
+        op_code = '0000011'
+    elif op_name == 'addi':
+        op_code = '0010011'
+    elif op_name == 'sltiu':
+        op_code = '0010011'
+    else:
+        op_code = '1100111'
     func3 = func3_dict[op_name]
 
     token_2 = token_1[1].split(",") #token_2[0] has rd
     rd = token_2[0]
     if len(token_2) == 2:
+
         token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
         token_4 = token_3[1]          #token_4 has rs1)
         token_4 = token_4[:-1]        #token_4 has rs1
