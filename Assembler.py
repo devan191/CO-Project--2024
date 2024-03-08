@@ -223,17 +223,27 @@ def B_type_encoder(token_1):
     token_2 = token_1[1].split(",") 
     rs1 = token_2[0]
     rs2 = token_2[1]
-    label = token_2[2]
     if (rs2 not in registers_dict) or (rs1 not in registers_dict):
         print("Error: illegal register name used on line",int(PrgC/4))
         sys.exit()
-    if label not in labels_dict:
-        print("Error: Using undefined label on line")
-        sys.exit()
-    imm = labels_dict[label] - PrgC #doing absolute addr - current addr
-    imm = bin_ext_converter(imm,13)
-    imm1 = imm[0] + imm[2:8]
-    imm0 = imm[-5:-1] + imm[1]
+    label = token_2[2]
+    # if label is given
+    if label[0].isalpha():
+        if label not in labels_dict:
+            print("Error: Using undefined label on line")
+            sys.exit()
+        imm = labels_dict[label] - PrgC #doing absolute addr - current addr
+        imm = bin_ext_converter(imm,13)
+        imm1 = imm[0] + imm[2:8]
+        imm0 = imm[-5:-1] + imm[1]
+    #if direct imm given in decimal
+    else:
+        imm = int(label)
+        imm = bin_ext_converter(imm,13)
+        imm1 = imm[0] + imm[2:8]
+        imm0 = imm[-5:-1] + imm[1]
+    
+    
     rs1 = registers_dict[rs1]
     rs2 = registers_dict[rs2]
 
@@ -270,16 +280,44 @@ def U_type_encoder(token_1):
     PrgC = PrgC + 4
     
 
-
+#label
 def J_type_encoder(token_1):
-    pass
+    global PrgC
+    op_code = '1101111'
+    op_name = token_1[0]
+    token_2 = token_1[1].split(",")
+    rd = token_2[0]
+    if rd not in registers_dict:
+        print("Error: illegal register name used on line",int(PrgC/4))
+        sys.exit()
+    rd = registers_dict[rd]
+    label = token_2[1]
+    # if label is given
+    if label[0].isalpha():
+        if label not in labels_dict:
+            print("Error: Using undefined label on line")
+            sys.exit()
+        imm = labels_dict[label] - PrgC #doing absolute addr - current addr
+        imm = bin_ext_converter(imm,21)
+        imm = imm[0] + imm[-11:-1] + imm[9] + imm[1:9]
+    #if direct imm given in decimal
+    else:
+        imm = int(label)
+        imm = bin_ext_converter(imm,21)
+        imm = imm[0] + imm[-11:-1] + imm[9] + imm[1:9]
+
+    binstr = imm + rd + op_code + '\n'
+    outputfile.write(binstr)
+
+    
+    PrgC = PrgC + 4
     
 
 def Label_type_encoder(opname,token_1):
     
     
     token_1.remove(opname)
-    new_line = token_1.join()
+    new_line = " ".join(token_1)
     instr_identifier(new_line)
 
 
@@ -317,11 +355,6 @@ for line in lines:
         else:
             labels_dict.update({label:PrgC})
 
-
-
-
-    
-
     
 
 #iterating of lines
@@ -338,5 +371,8 @@ while(PrgC <= PrgCMax):
 #dekh lenge iske logic bad me ek to last line of output file pr if lgake bhi check kr skte h
 print("Error: Virtual halt not used as last instruction")
 sys.exit(-1)
+
+
+
 
 
