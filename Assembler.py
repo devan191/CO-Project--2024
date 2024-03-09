@@ -137,9 +137,16 @@ def R_type_encoder(token_1):
     op_name = token_1[0]
     func3 = func3_dict[op_name]
     token_2 = token_1[1].split(",")
+    if len(token_2) != 3:
+        print("Error: missing comma or regname or imm value on line",line_no)
+        sys.exit()
+    if (len(token_2) == 3) and ('' in token_2):
+        print('Error: missing regname or imm value on line',line_no)
+        sys.exit()
     for i in token_2:
         if i not in registers_dict:
             print("Error: illegal register name used on line",line_no)
+            sys.exit()
     rd = registers_dict[token_2[0]]
     rs1 = registers_dict[token_2[1]]
     rs2 = registers_dict[token_2[2]]
@@ -172,9 +179,17 @@ def I_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") #token_2[0] has rd
     rd = token_2[0]
+    if (len(token_2) == 3) and ('' in token_2):
+        print('Error: missing regname or imm value on line',line_no)
+        sys.exit()
     if len(token_2) == 2:
-
+        if '' in token_2:
+            print('Error: missing regname or imm value on line',line_no)
+            sys.exit()
         token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
+        if token_3[0] == '':
+            print('Error: missing imm value on line',line_no)
+            sys.exit()
         token_4 = token_3[1]          #token_4 has rs1)
         token_4 = token_4[:-1]        #token_4 has rs1
         rs1 = token_4
@@ -207,7 +222,13 @@ def S_type_encoder(token_1):
     func3 = func3_dict[op_name]
 
     token_2 = token_1[1].split(",") #token_2[0] has rs2
+    if len(token_2) != 2:
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma")
+        sys.exit()
     token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
+    if token_3[0] == '':
+        print("Error: missing imm value on line",line_no)
+        sys.exit()
     token_4 = token_3[1]          #token_4 has rs1)
     token_4 = token_4[:-1]        #token_4 has rs1
     rs1 = token_4
@@ -236,6 +257,12 @@ def B_type_encoder(token_1):
     func3 = func3_dict[op_name]
 
     token_2 = token_1[1].split(",") 
+    if len(token_2) != 3:
+        print("Error: missing comma or regname or imm value on line",line_no)
+        sys.exit()
+    if (len(token_2) == 3) and ('' in token_2):
+        print('Error: missing regname or imm value on line',line_no)
+        sys.exit()
     rs1 = token_2[0]
     rs2 = token_2[1]
     if (rs2 not in registers_dict) or (rs1 not in registers_dict):
@@ -274,6 +301,9 @@ def U_type_encoder(token_1):
     global PrgC
     op_name = token_1[0]
     token_2 = token_1[1].split(",")
+    if (len(token_2) != 2) or ('' in token_2):
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/missing imm value/missing regname")
+        sys.exit()
     rd = token_2[0]
     if rd not in registers_dict:
         print("Error: illegal register name used on line",line_no)
@@ -301,6 +331,9 @@ def J_type_encoder(token_1):
     op_code = '1101111'
     op_name = token_1[0]
     token_2 = token_1[1].split(",")
+    if (len(token_2) != 2) or ('' in token_2):
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma or missing imm value or missing regname!")
+        sys.exit()
     rd = token_2[0]
     if rd not in registers_dict:
         print("Error: illegal register name used on line",line_no)
@@ -343,6 +376,7 @@ def instr_identifier(line):
     
     token_1 = line.split() #token_1 contains tokens split about white spaces
     opname = token_1[0]
+    
     if opname[-1] == ":":
         Label_type_encoder(opname,token_1)
     elif opname in R_type_instr:
@@ -358,7 +392,7 @@ def instr_identifier(line):
     elif opname in J_type_instr:
         J_type_encoder(token_1)
     else:
-        print("Error: invalid instruction name on line",line_no)
+        print("Error: invalid instruction name on line",line_no,"\n","Note: Check for missed space between opname and reg!")
         sys.exit()
 
 #collecting all labels first
@@ -370,6 +404,18 @@ for i in range(len(lines)):
     token_1 = line.split()
     opname = token_1[0]
     label = opname[0:-1]
+    if len(token_1) > 3:
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces in names of label/opname/reg name!")
+        sys.exit()
+    if (len(token_1) == 3) and (':' not in opname):
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces before or after comma in regname or before colon if using label")
+        sys.exit()
+    if (len(token_1) == 2) and ( ':' in opname):
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for missing space after colon/opname or missing opname")
+        sys.exit()
+    if len(token_1) == 1:
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for missed spaces in names of label/opname/reg name!")
+        sys.exit()
     if opname[-1] == ":":
         if label in labels_dict:
             # line no considering blank lines
@@ -393,13 +439,4 @@ while(PrgC <= PrgCMax):
 
 if virtual_halt_flag != True:
     print("Error: virtual halt missing")
-
-
-
-
-
-
-
-
-
 
