@@ -382,8 +382,7 @@ while(PrgC <= PrgCMax):
 if virtual_halt_flag != True:
     print("Error: virtual halt missing")
 
-if line[-15:] != 'beq zero,zero,0':
-    print("Error: virtual halt not used as last instruction")
+
 
 
 
