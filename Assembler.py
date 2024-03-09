@@ -18,6 +18,9 @@ global dataMemoryCounter
 PrgC = 0 # Program Counter
 PrgC_label = 0
 PrgCMax = 4*(len(lines_noblank) -1)
+if PrgCMax > 255:
+    print('Error: Program memory exceeded:no of instr > 64')
+    sys.exit()
 # we may use PrgCMax instead of instrCounter
 instrCounter = 0 #for tracking the numbers of instructions assembled don't exceed program memory
 stackCounter = 32 #for tracking variables don't exceed stack memory, we have only 32 registers
