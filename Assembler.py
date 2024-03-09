@@ -1,7 +1,8 @@
 import sys
-
-inputfile = open(r"inputfile.txt") 
-outputfile = open("outputbinary.txt","w+")
+input = sys.argv[-2]
+output = sys.argv[-1]
+inputfile = open(input) 
+outputfile = open(output,"w+")
 
 # creating a list of all lines in input txt file, each element in lines is a line
 lines_unrefined = inputfile.readlines() 
