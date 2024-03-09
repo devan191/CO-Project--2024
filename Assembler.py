@@ -6,6 +6,7 @@ outputfile = open("outputbinary.txt","w+")
 # creating a list of all lines in input txt file, each element in lines is a line
 lines_unrefined = inputfile.readlines() 
 lines = [line.strip() for line in lines_unrefined if line]
+lines = [line for line in lines if line != '']
 # lines excludes all new line characters and empty lines
 
 
