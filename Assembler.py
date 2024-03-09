@@ -139,10 +139,10 @@ def R_type_encoder(token_1):
     func3 = func3_dict[op_name]
     token_2 = token_1[1].split(",")
     if len(token_2) != 3:
-        print("Error: missing comma or regname or imm value on line",line_no)
+        print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values")
         sys.exit()
     if (len(token_2) == 3) and ('' in token_2):
-        print('Error: missing regname or imm value on line',line_no)
+        print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
     for i in token_2:
         if i not in registers_dict:
@@ -180,16 +180,19 @@ def I_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") #token_2[0] has rd
     rd = token_2[0]
+    if (len(token_2) > 3) or (len(token_2) < 2):
+        print("Syntax error: missing regname/imm value or extra regnames/imm values on line",line_no)
+        sys.out()
     if (len(token_2) == 3) and ('' in token_2):
-        print('Error: missing regname or imm value on line',line_no)
+        print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
     if len(token_2) == 2:
         if '' in token_2:
-            print('Error: missing regname or imm value on line',line_no)
+            print('Syntax Error: missing regname or imm value on line',line_no)
             sys.exit()
         token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
         if token_3[0] == '':
-            print('Error: missing imm value on line',line_no)
+            print('Syntax Error: missing imm value on line',line_no)
             sys.exit()
         token_4 = token_3[1]          #token_4 has rs1)
         token_4 = token_4[:-1]        #token_4 has rs1
@@ -224,11 +227,14 @@ def S_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") #token_2[0] has rs2
     if len(token_2) != 2:
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma")
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma or extra comma/regname/imm values")
+        sys.exit()
+    if (len(token_2) == 2) and ('' in token_2):
+        print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
     token_3 = token_2[1].split("(") #token_3[0] has imm[11:0] in decimal
     if token_3[0] == '':
-        print("Error: missing imm value on line",line_no)
+        print("Syntax Error: missing imm value on line",line_no)
         sys.exit()
     token_4 = token_3[1]          #token_4 has rs1)
     token_4 = token_4[:-1]        #token_4 has rs1
@@ -259,10 +265,10 @@ def B_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") 
     if len(token_2) != 3:
-        print("Error: missing comma or regname or imm value on line",line_no)
+        print("Syntax Error: missing comma /regname /imm values on line or extra comma/regnames/imm values",line_no)
         sys.exit()
     if (len(token_2) == 3) and ('' in token_2):
-        print('Error: missing regname or imm value on line',line_no)
+        print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
     rs1 = token_2[0]
     rs2 = token_2[1]
@@ -303,7 +309,7 @@ def U_type_encoder(token_1):
     op_name = token_1[0]
     token_2 = token_1[1].split(",")
     if (len(token_2) != 2) or ('' in token_2):
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/missing imm value/missing regname")
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/ imm value/ regname or extra regnames/imm values")
         sys.exit()
     rd = token_2[0]
     if rd not in registers_dict:
@@ -333,7 +339,7 @@ def J_type_encoder(token_1):
     op_name = token_1[0]
     token_2 = token_1[1].split(",")
     if (len(token_2) != 2) or ('' in token_2):
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma or missing imm value or missing regname!")
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/ imm value/ missing regname or extra commas/regnames/imm values!")
         sys.exit()
     rd = token_2[0]
     if rd not in registers_dict:
@@ -440,4 +446,5 @@ while(PrgC <= PrgCMax):
 
 if virtual_halt_flag != True:
     print("Error: virtual halt missing")
+
 
