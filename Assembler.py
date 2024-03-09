@@ -5,17 +5,19 @@ outputfile = open("outputbinary.txt","w+")
 
 # creating a list of all lines in input txt file, each element in lines is a line
 lines_unrefined = inputfile.readlines() 
-lines = [line.strip() for line in lines_unrefined if line]
-lines = [line for line in lines if line != '']
+lines = [line.strip() for line in lines_unrefined]
+lines_noblank = [line for line in lines if line != '']
 # lines excludes all new line characters and empty lines
 
-
+line_no = 0
+line_no_label = 0
 global instrCounter
 global stackCounter
 global dataMemoryCounter
 
 PrgC = 0 # Program Counter
-PrgCMax = 4*(len(lines) -1)
+PrgC_label = 0
+PrgCMax = 4*(len(lines_noblank) -1)
 # we may use PrgCMax instead of instrCounter
 instrCounter = 0 #for tracking the numbers of instructions assembled don't exceed program memory
 stackCounter = 32 #for tracking variables don't exceed stack memory, we have only 32 registers
@@ -108,7 +110,7 @@ def bin_ext_converter(n,bits):
     if n >= 0:
         n_2 = '0' + n_1[2:]
         if len(n_2) > bits:
-            print('Error: illegal Imm out of bounds on line',(int(PrgC/4)+1))
+            print('Error: illegal Imm out of bounds on line',line_no)
             sys.exit()
         else:
             n_2 = '0'*(bits-len(n_2)) + n_2
@@ -118,7 +120,7 @@ def bin_ext_converter(n,bits):
         n_2 = str(bin(int(n_2,2)+1))
         n_2 = n_2[2:]
         if len(n_2)> bits:
-            print('Error: illegal Imm out of bounds on line',(int(PrgC/4)+1))
+            print('Error: illegal Imm out of bounds on line',line_no)
             sys.exit()
         else:
             n_2 = '1'*(bits-len(n_2)) + n_2
@@ -134,7 +136,7 @@ def R_type_encoder(token_1):
     token_2 = token_1[1].split(",")
     for i in token_2:
         if i not in registers_dict:
-            print("Error: illegal register name used on line",(int(PrgC/4)+1))
+            print("Error: illegal register name used on line",line_no)
     rd = registers_dict[token_2[0]]
     rs1 = registers_dict[token_2[1]]
     rs2 = registers_dict[token_2[2]]
@@ -180,7 +182,7 @@ def I_type_encoder(token_1):
         imm = bin_ext_converter(int(token_2[2]),12)
 
     if (rd not in registers_dict) or (rs1 not in registers_dict):
-        print("Error: illegal register name used on line",(int(PrgC/4)+1))
+        print("Error: illegal register name used on line",line_no)
         sys.exit()
     rd = registers_dict[rd]
     rs1 = registers_dict[rs1]
@@ -208,7 +210,7 @@ def S_type_encoder(token_1):
     rs1 = token_4
     rs2 = token_2[0]
     if (rs2 not in registers_dict) or (rs1 not in registers_dict):
-        print("Error: illegal register name used on line",(int(PrgC/4)+1))
+        print("Error: illegal register name used on line",line_no)
         sys.exit()
     rs2 = registers_dict[rs2]
     rs1 = registers_dict[rs1]
@@ -234,13 +236,13 @@ def B_type_encoder(token_1):
     rs1 = token_2[0]
     rs2 = token_2[1]
     if (rs2 not in registers_dict) or (rs1 not in registers_dict):
-        print("Error: illegal register name used on line",(int(PrgC/4)+1))
+        print("Error: illegal register name used on line",line_no)
         sys.exit()
     label = token_2[2]
     # if label is given
     if label[0].isalpha():
         if label not in labels_dict:
-            print("Error: using undefined label on line",(int(PrgC/4)+1))
+            print("Error: using undefined label on line",line_no)
             sys.exit()
         imm = labels_dict[label] - PrgC #doing absolute addr - current addr
         imm = bin_ext_converter(imm,13)
@@ -271,7 +273,7 @@ def U_type_encoder(token_1):
     token_2 = token_1[1].split(",")
     rd = token_2[0]
     if rd not in registers_dict:
-        print("Error: illegal register name used on line",(int(PrgC/4)+1))
+        print("Error: illegal register name used on line",line_no)
         sys.exit()
 
     rd = registers_dict[rd]
@@ -298,14 +300,14 @@ def J_type_encoder(token_1):
     token_2 = token_1[1].split(",")
     rd = token_2[0]
     if rd not in registers_dict:
-        print("Error: illegal register name used on line",(int(PrgC/4)+1))
+        print("Error: illegal register name used on line",line_no)
         sys.exit()
     rd = registers_dict[rd]
     label = token_2[1]
     # if label is given
     if label[0].isalpha():
         if label not in labels_dict:
-            print("Error: using undefined label on line",(int(PrgC/4)+1))
+            print("Error: using undefined label on line",line_no)
             sys.exit()
         imm = labels_dict[label] - PrgC #doing absolute addr - current addr
         imm = bin_ext_converter(imm,21)
@@ -353,35 +355,42 @@ def instr_identifier(line):
     elif opname in J_type_instr:
         J_type_encoder(token_1)
     else:
-        print("Error: invalid instruction name on line",(int(PrgC/4)+1))
+        print("Error: invalid instruction name on line",line_no)
         sys.exit()
 
 #collecting all labels first
-for line in lines:
+for i in range(len(lines)):
+    line_no_label = line_no_label + 1
+    line = lines[i]
+    if(line == ''):
+        continue
     token_1 = line.split()
     opname = token_1[0]
     label = opname[0:-1]
     if opname[-1] == ":":
         if label in labels_dict:
-            print("Error: redefining already used label on line",(int(PrgC/4)+1))
+            # line no considering blank lines
+            print("Error: redefining already used label on instruction ",line_no_label)
             sys.exit()
         else:
-            labels_dict.update({label:PrgC})
+            labels_dict.update({label:PrgC_label})
+            
+    PrgC_label = PrgC_label + 4
 
-    
 
 #iterating through lines of input assembly code
 
 while(PrgC <= PrgCMax):
-    line = lines[int(PrgC/4)]
-    #if(line == ""):
-    #   PrgC = PrgC+4
-    #   continue
+    line_no = line_no + 1
+    line = lines[int(line_no-1)]
+    if(line == ''):
+        continue
     instr_identifier(line)
 
 
 if virtual_halt_flag != True:
     print("Error: virtual halt missing")
+
 
 
 
