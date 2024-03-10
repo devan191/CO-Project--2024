@@ -107,6 +107,12 @@ func3_dict = {
     'bltu': '110',
     'bgeu': '111'
 }
+def valid_imm(n):
+    numlist = ['0','1','2','3','4','5','6','7','8','9','-','.']
+    for i in n:
+        if i not in numlist:
+            print("Syntax Error: imm value is not a number on line",line_no,'\n',"Note: if you were giving in a label, it might be undefined in code!")
+            sys.exit()
 
 # decimal to binary with sign ext converter
 def bin_ext_converter(n,bits):
@@ -119,6 +125,11 @@ def bin_ext_converter(n,bits):
         else:
             n_2 = '0'*(bits-len(n_2)) + n_2
     else:
+        if abs(n) == 2 ** (bits-1):
+            n_2 = str(bin(n))
+            n_2 = n_2[3:]
+            return n_2
+        
         n_2 = '0'+ n_1[3:]
         n_2 = ''.join('1' if b == '0' else '0' for b in n_2)
         n_2 = str(bin(int(n_2,2)+1))
@@ -139,7 +150,7 @@ def R_type_encoder(token_1):
     func3 = func3_dict[op_name]
     token_2 = token_1[1].split(",")
     if len(token_2) != 3:
-        print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values")
+        print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values!")
         sys.exit()
     if (len(token_2) == 3) and ('' in token_2):
         print('Syntax Error: missing regname or imm value on line',line_no)
@@ -194,6 +205,7 @@ def I_type_encoder(token_1):
         if token_3[0] == '':
             print('Syntax Error: missing imm value on line',line_no)
             sys.exit()
+        valid_imm(token_3[0])
         token_4 = token_3[1]          #token_4 has rs1)
         token_4 = token_4[:-1]        #token_4 has rs1
         rs1 = token_4
@@ -201,6 +213,7 @@ def I_type_encoder(token_1):
 
     else:
         rs1 = token_2[1]
+        valid_imm(token_2[2])
         imm = bin_ext_converter(int(token_2[2]),12)
 
     if (rd not in registers_dict) or (rs1 not in registers_dict):
@@ -227,7 +240,7 @@ def S_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") #token_2[0] has rs2
     if len(token_2) != 2:
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma or extra comma/regname/imm values")
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma or extra comma/regname/imm values!")
         sys.exit()
     if (len(token_2) == 2) and ('' in token_2):
         print('Syntax Error: missing regname or imm value on line',line_no)
@@ -236,6 +249,7 @@ def S_type_encoder(token_1):
     if token_3[0] == '':
         print("Syntax Error: missing imm value on line",line_no)
         sys.exit()
+    valid_imm(token_3[0])
     token_4 = token_3[1]          #token_4 has rs1)
     token_4 = token_4[:-1]        #token_4 has rs1
     rs1 = token_4
@@ -265,7 +279,7 @@ def B_type_encoder(token_1):
 
     token_2 = token_1[1].split(",") 
     if len(token_2) != 3:
-        print("Syntax Error: missing comma /regname /imm values on line or extra comma/regnames/imm values",line_no)
+        print("Syntax Error: missing comma /regname /imm values on line or extra comma/regnames/imm values!",line_no)
         sys.exit()
     if (len(token_2) == 3) and ('' in token_2):
         print('Syntax Error: missing regname or imm value on line',line_no)
@@ -277,16 +291,15 @@ def B_type_encoder(token_1):
         sys.exit()
     label = token_2[2]
     # if label is given
-    if label[0].isalpha():
-        if label not in labels_dict:
-            print("Error: using undefined label on line",line_no)
-            sys.exit()
+    if label in labels_dict:
+        
         imm = labels_dict[label] - PrgC #doing absolute addr - current addr
         imm = bin_ext_converter(imm,13)
         imm1 = imm[0] + imm[2:8]
         imm0 = imm[-5:-1] + imm[1]
     #if direct imm given in decimal
     else:
+        valid_imm(label)
         imm = int(label)
         imm = bin_ext_converter(imm,13)
         imm1 = imm[0] + imm[2:8]
@@ -309,7 +322,7 @@ def U_type_encoder(token_1):
     op_name = token_1[0]
     token_2 = token_1[1].split(",")
     if (len(token_2) != 2) or ('' in token_2):
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/ imm value/ regname or extra regnames/imm values")
+        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/ imm value/ regname or extra regnames/imm values!")
         sys.exit()
     rd = token_2[0]
     if rd not in registers_dict:
@@ -317,6 +330,7 @@ def U_type_encoder(token_1):
         sys.exit()
 
     rd = registers_dict[rd]
+    valid_imm(token_2[1])
     imm = int(token_2[1])
     imm = bin_ext_converter(imm,32)
     imm = imm[0:20]
@@ -348,15 +362,14 @@ def J_type_encoder(token_1):
     rd = registers_dict[rd]
     label = token_2[1]
     # if label is given
-    if label[0].isalpha():
-        if label not in labels_dict:
-            print("Error: using undefined label on line",line_no)
-            sys.exit()
+    if label in labels_dict:
+        
         imm = labels_dict[label] - PrgC #doing absolute addr - current addr
         imm = bin_ext_converter(imm,21)
         imm = imm[0] + imm[-11:-1] + imm[9] + imm[1:9]
     #if direct imm given in decimal
     else:
+        valid_imm(label)
         imm = int(label)
         imm = bin_ext_converter(imm,21)
         imm = imm[0] + imm[-11:-1] + imm[9] + imm[1:9]
@@ -366,7 +379,65 @@ def J_type_encoder(token_1):
 
     
     PrgC = PrgC + 4
-    
+
+#no label
+def Bonus_type_encoder(token_1):
+    global PrgC
+    opname = token_1[0]
+    if opname == 'rst':
+        binstr = '00000000000000000000000000000000' + '\n'
+        outputfile.write(binstr)
+        PrgC = PrgC + 4
+
+    elif opname == 'halt':
+        binstr = '11111111111111111111111111111111' + '\n'
+        outputfile.write(binstr)
+        PrgC = PrgC + 4
+
+    elif opname == 'mul':
+        op_code = '1000000'
+        func3 = '001'
+        func7 = '0000000'
+        token_2 = token_1[1].split(",")
+        if len(token_2) != 3:
+            print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values!")
+            sys.exit()
+        if (len(token_2) == 3) and ('' in token_2):
+            print('Syntax Error: missing regname or imm value on line',line_no)
+            sys.exit()
+        for i in token_2:
+            if i not in registers_dict:
+                print("Error: illegal register name used on line",line_no)
+                sys.exit()
+        rd = registers_dict[token_2[0]]
+        rs1 = registers_dict[token_2[1]]
+        rs2 = registers_dict[token_2[2]]
+        binstr = func7 + rs2 + rs1 + func3 + rd + op_code + '\n'
+        outputfile.write(binstr)
+        PrgC = PrgC + 4
+
+    else:
+        op_code = '1000001' #rvrs
+        func3 = '010'
+        func12 = '000000000000'
+        token_2 = token_1[1].split(",")
+        if len(token_2) != 2:
+            print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values!")
+            sys.exit()
+        if (len(token_2) == 2) and ('' in token_2):
+            print('Syntax Error: missing regname or imm value on line',line_no)
+            sys.exit()
+        for i in token_2:
+            if i not in registers_dict:
+                print("Error: illegal register name used on line",line_no)
+                sys.exit()
+        rd = registers_dict[token_2[0]]
+        rs1 = registers_dict[token_2[1]]
+        
+        binstr = func12 + rs1 + func3 + rd + op_code + '\n'
+        outputfile.write(binstr)
+        PrgC = PrgC + 4
+        
 
 def Label_type_encoder(opname,token_1):
     
@@ -398,8 +469,10 @@ def instr_identifier(line):
         U_type_encoder(token_1)
     elif opname in J_type_instr:
         J_type_encoder(token_1)
+    elif opname in Bonus_instr:
+        Bonus_type_encoder(token_1)
     else:
-        print("Error: invalid instruction name on line",line_no,"\n","Note: Check for missed space between opname and reg!")
+        print("Error: invalid operation name on line",line_no,"\n","Note: Check for missed space between opname and reg!")
         sys.exit()
 
 #collecting all labels first
@@ -414,13 +487,13 @@ for i in range(len(lines)):
     if len(token_1) > 3:
         print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces in names of label/opname/reg name!")
         sys.exit()
-    if (len(token_1) == 3) and (':' not in opname):
-        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces before or after comma in regname or before colon if using label")
+    if (len(token_1) == 3) and (':' not in opname): #we expect a label here but don't get it
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces before or after comma in regname or before colon if using label or in names of label/opname/reg name!")
         sys.exit()
-    if (len(token_1) == 2) and ( ':' in opname):
-        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for missing space after colon/opname or missing opname")
+    if (len(token_1) == 2) and ( ':' in opname) and (token_1[1] != 'rst') and (token_1[1] != 'halt'): #we don't expect label here but get it
+        print("Error: Syntax error on line",line_no_label,"\n","Note: Check for missing space after colon/opname or missing opname!")
         sys.exit()
-    if len(token_1) == 1:
+    if len(token_1) == 1 and (token_1[0] != 'rst') and (token_1[0] != 'halt'):
         print("Error: Syntax error on line",line_no_label,"\n","Note: Check for missed spaces in names of label/opname/reg name!")
         sys.exit()
     if opname[-1] == ":":
@@ -436,6 +509,7 @@ for i in range(len(lines)):
 
 #iterating through lines of input assembly code
 
+
 while(PrgC <= PrgCMax):
     line_no = line_no + 1
     line = lines[int(line_no-1)]
@@ -445,6 +519,6 @@ while(PrgC <= PrgCMax):
 
 
 if virtual_halt_flag != True:
-    print("Error: virtual halt missing")
+    print("Error: virtual halt missing!")
 
 
