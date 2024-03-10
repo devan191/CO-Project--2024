@@ -110,12 +110,7 @@ func3_dict = {
     'bltu': '110',
     'bgeu': '111'
 }
-def valid_imm(n):
-    numlist = ['0','1','2','3','4','5','6','7','8','9','-','.']
-    for i in n:
-        if i not in numlist:
-            print("Syntax Error: imm value is not a number on line",line_no,'\n',"Note: if you were giving in a label, it might be undefined in code!")
-            sys.exit()
+
 
 
 # decimal to binary with sign ext converter
@@ -210,7 +205,7 @@ def I_type_encoder(token_1):
             print('Syntax Error: missing imm value on line',line_no)
             sys.exit()
         valid_imm(token_3[0])
-        token_4 = token_3[1]          #token_4 has rs1)
+        token_4 = token_3[1]          #token_4 has rs1
         token_4 = token_4[:-1]        #token_4 has rs1
         rs1 = token_4
         imm = bin_ext_converter(int(token_3[0]),12)
