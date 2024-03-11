@@ -480,6 +480,15 @@ def instr_identifier(line):
         print("Error: invalid operation name on line",line_no,"\n","Note: Check for missed space between opname and reg!")
         sys.exit()
 
+    #Collecting labels first
+    for i in range(len(lines)):
+        line_no_label += 1
+        line = lines[i]
+        if(line == ''):
+            continue
+        token_1 = line.split()
+        opname = token_1[0]
+        label = opname[0:-1]
 
     if len(token_1) > 3:
         print("Error: Syntax error on line",line_no_label,"\n","Note: Check for redundant spaces in names of label/opname/reg name!")
