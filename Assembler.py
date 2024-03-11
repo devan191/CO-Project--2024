@@ -198,7 +198,7 @@ def I_type_encoder(token_1):
     rd = token_2[0]
     if (len(token_2) > 3) or (len(token_2) < 2):
         print("Syntax error: missing regname/imm value or extra regnames/imm values on line",line_no)
-        sys.out()
+        sys.exit()
     if (len(token_2) == 3) and ('' in token_2):
         print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
