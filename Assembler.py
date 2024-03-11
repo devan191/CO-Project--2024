@@ -486,7 +486,7 @@ for i in range(len(lines)):
     line = lines[i]
     if(line == ''):
         continue
-    token_1 = line.split()
+    token_1 = list(map(str,line.split()))
     opname = token_1[0]
     label = opname[0:-1]
 
