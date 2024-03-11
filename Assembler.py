@@ -386,62 +386,7 @@ def J_type_encoder(token_1):
     PrgC = PrgC + 4
 
 #no label
-def Bonus_type_encoder(token_1):
-    global PrgC
-    opname = token_1[0]
-    if opname == 'rst':
-        binstr = '00000000000000000000000000000000' + '\n'
-        outputfile.write(binstr)
-        PrgC = PrgC + 4
 
-    elif opname == 'halt':
-        binstr = '11111111111111111111111111111111' + '\n'
-        outputfile.write(binstr)
-        PrgC = PrgC + 4
-
-    elif opname == 'mul':
-        op_code = '1000000'
-        func3 = '001'
-        func7 = '0000000'
-        token_2 = token_1[1].split(",")
-        if len(token_2) != 3:
-            print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values!")
-            sys.exit()
-        if (len(token_2) == 3) and ('' in token_2):
-            print('Syntax Error: missing regname or imm value on line',line_no)
-            sys.exit()
-        for i in token_2:
-            if i not in registers_dict:
-                print("Error: illegal register name used on line",line_no)
-                sys.exit()
-        rd = registers_dict[token_2[0]]
-        rs1 = registers_dict[token_2[1]]
-        rs2 = registers_dict[token_2[2]]
-        binstr = func7 + rs2 + rs1 + func3 + rd + op_code + '\n'
-        outputfile.write(binstr)
-        PrgC = PrgC + 4
-
-    else:
-        op_code = '1000001' #rvrs
-        func3 = '010'
-        func12 = '000000000000'
-        token_2 = token_1[1].split(",")
-        if len(token_2) != 2:
-            print("Syntax Error on line ",line_no,"Note: Check for missing comma/regname/imm value or extra comma/regnames/imm values!")
-            sys.exit()
-        if (len(token_2) == 2) and ('' in token_2):
-            print('Syntax Error: missing regname or imm value on line',line_no)
-            sys.exit()
-        for i in token_2:
-            if i not in registers_dict:
-                print("Error: illegal register name used on line",line_no)
-                sys.exit()
-        rd = registers_dict[token_2[0]]
-        rs1 = registers_dict[token_2[1]]
-        
-        binstr = func12 + rs1 + func3 + rd + op_code + '\n'
-        outputfile.write(binstr)
-        PrgC = PrgC + 4
         
 
 def Label_type_encoder(opname,token_1):
