@@ -203,6 +203,9 @@ def I_type_encoder(token_1):
         print('Syntax Error: missing regname or imm value on line',line_no)
         sys.exit()
     if len(token_2) == 2:
+        if '(' not in token_2[1]:
+            print('Syntax Error: on line',line_no,'\n','Note: Check for missing commas!')
+            sys.exit()
         if '' in token_2:
             print('Syntax Error: missing regname or imm value on line',line_no)
             sys.exit()
