@@ -352,15 +352,7 @@ def U_type_encoder(token_1):
     
 
 #label
-def J_type_encoder(token_1):
-    global PrgC
-    op_code = '1101111'
-    op_name = token_1[0]
-    token_2 = token_1[1].split(",")
-    if (len(token_2) != 2) or ('' in token_2):
-        print("Error: Syntax error on line",line_no,'\n',"Note: Check for missing comma/ imm value/ missing regname or extra commas/regnames/imm values!")
-        sys.exit()
-    rd = token_2[0]
+
     if rd not in registers_dict:
         print("Error: illegal register name used on line",line_no)
         sys.exit()
