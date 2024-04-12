@@ -10,7 +10,7 @@ lines = [line.strip() for line in lines_unrefined]
 lines_noblank = [line for line in lines if line != '']
 # lines excludes all new line characters and empty lines
 
-outstr = ''
+
 
 PrgC = 0 # Program Counter
 
@@ -91,9 +91,9 @@ def dec2bin_sext(n,bits):
     return n_2
 
 def reg_print():
-    global outstr
+    
     global PrgC
-
+    outstr = ''
     outstr = outstr +'0b'+ dec2bin_sext(PrgC,32) +' '+ '0b'+ reg_data['zero']
     outstr = outstr + ' ' + '0b'+ reg_data['ra']
     outstr = outstr + ' ' + '0b'+ reg_data['sp']
