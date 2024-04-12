@@ -321,6 +321,7 @@ def R_type_enc(line):
         reg_data[reg_dict[rd]] = ''.join('1' if bit1 == '1' and bit2 == '1' else '0' for bit1, bit2 in zip(reg_data[reg_dict[rs1]], reg_data[reg_dict[rs2]]))
     
     PrgC = PrgC + 4
+    reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
     reg_print()
         
 
@@ -341,6 +342,7 @@ def I_type_enc(line):
     if func3 == '010':
         reg_data[reg_dict[rd]] = datamem_dict[bin2dec(add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32)))]
         PrgC = PrgC + 4
+        reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
         reg_print()
         
     elif func3 == '011':
@@ -349,22 +351,33 @@ def I_type_enc(line):
         if a < b:
             reg_data[reg_dict[rd]] = dec2bin_sext(1,32)
         PrgC = PrgC + 4
+        reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
         reg_print()
 
     elif func3 == '000':
         if opcode == '0010011':
-            print(reg_data[reg_dict[rs1]])
             print(x)
             reg_data[reg_dict[rd]] = add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32))
             print(reg_data[reg_dict[rd]])
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
+            print(PrgC)
             reg_print()
+            
         else:
             reg_data[reg_dict[rd]] = dec2bin_sext((PrgC+4),32)
+            
             PrgC = add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32))
+            
             PrgC = PrgC[:-1] + '0'
+            
             PrgC = bin2dec(PrgC)
+            print(PrgC)
+            
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
+            sys.exit()
+            
 
 
 
@@ -383,6 +396,7 @@ def S_type_enc(line):
     datamem_dict[bin2dec(add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32)))] = reg_data[reg_dict[rs2]]
 
     PrgC = PrgC + 4
+    reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
     reg_print()
 
 
@@ -409,50 +423,62 @@ def B_type_enc(line):
     if func3 == '000':
         if a == b:
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
     elif func3 == '001':
         if a != b:
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
     elif func3 == '100':
         if a < b:
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             #print('yes')
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
     elif func3 == '101':
         if a >= b:
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
     elif func3 == '110':
         if abs(a) < abs(b):
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
     elif func3 == '111':
         if abs(a) >= abs(b):
             PrgC = PrgC + x
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
         else:
             PrgC = PrgC + 4
+            reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
 
 
@@ -468,10 +494,12 @@ def U_type_enc(line):
     if opcode == '0110111':
         reg_data[reg_dict[rd]] = imm
         PrgC = PrgC + 4
+        reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
         reg_print()
     else:
         reg_data[reg_dict[rd]] = add_signed_binary(imm,dec2bin_sext(PrgC,32))
         PrgC = PrgC + 4
+        reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
         reg_print()
 
 
@@ -493,6 +521,7 @@ def J_type_enc(line):
     PrgC = add_signed_binary(dec2bin_sext(x,32),dec2bin_sext(PrgC,32))
     PrgC = PrgC[:-1] + '0'
     PrgC = bin2dec(PrgC)
+    reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
     reg_print()
 
 
