@@ -131,6 +131,7 @@ def reg_print():
     
 
 def bin2dec(n):
+    #print(n)
     if n[0] == '0':
         a = int(n, 2) 
     else:
@@ -197,7 +198,7 @@ reg_dict = {
 reg_data = {
     'zero': '00000000000000000000000000000000',
     'ra':   '00000000000000000000000000000000',
-    'sp':   '00000000000000000000000000000000',
+    'sp':   '00000000000000000000000100000000',
     'gp':   '00000000000000000000000000000000',
     'tp':   '00000000000000000000000000000000',
     't0':   '00000000000000000000000000000000',
@@ -289,7 +290,8 @@ def R_type_enc(line):
 
     elif func3 == '001':
         #doubt right now
-        reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][5:] + '0' * abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
+        y = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
+        reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][y:] + '0' * y
         
 
     elif func3 == '010':
@@ -309,7 +311,8 @@ def R_type_enc(line):
 
     elif func3 == '101':
         #doubt right now
-        reg_data[reg_dict[rd]] =  '0' * abs(bin2dec(reg_data[reg_dict[rs2]][-5:])) + reg_data[reg_dict[rs1]][:-5] 
+        x = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
+        reg_data[reg_dict[rd]] =  '0' * x + reg_data[reg_dict[rs1]][:-x] 
 
     elif func3 == '110':
         reg_data[reg_dict[rd]] = ''.join('1' if bit1 == '1' or bit2 == '1' else '0' for bit1, bit2 in zip(reg_data[reg_dict[rs1]], reg_data[reg_dict[rs2]]))
@@ -350,7 +353,10 @@ def I_type_enc(line):
 
     elif func3 == '000':
         if opcode == '0010011':
+            print(reg_data[reg_dict[rs1]])
+            print(x)
             reg_data[reg_dict[rd]] = add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32))
+            print(reg_data[reg_dict[rd]])
             PrgC = PrgC + 4
             reg_print()
         else:
@@ -384,17 +390,22 @@ def B_type_enc(line):
     global outstr
     global PrgC
     global stackCounter
+    #print(line)
     imm1 = line[0]
     imm3 = line[1:7]
     rs2 = line[7:12]
     rs1 = line[12:17]
     func3 = line[17:20]
     imm4 = line[20:24]
-    imm2 = line[25]
+    imm2 = line[24]
     imm = imm1 + imm2 + imm3 + imm4 + '0'
+    #print(imm)
     x = bin2dec(imm)
+    #print(x)
     a = bin2dec(reg_data[reg_dict[rs1]])
     b = bin2dec(reg_data[reg_dict[rs2]])
+    #print(a)
+    #print(b)
     if func3 == '000':
         if a == b:
             PrgC = PrgC + x
@@ -414,6 +425,7 @@ def B_type_enc(line):
     elif func3 == '100':
         if a < b:
             PrgC = PrgC + x
+            #print('yes')
             reg_print()
         else:
             PrgC = PrgC + 4
@@ -467,16 +479,18 @@ def J_type_enc(line):
     global outstr
     global PrgC
     global stackCounter
-    
+    #print('Yes')
     imm1 = line[0]
     imm4 = line[1:11]
     imm3 = line[11]
     imm2 = line[12:20]
     rd = line[20:25]
     imm = imm1 + imm2 + imm3 + imm4 + '0'
-
+    #print(imm)
+    x = bin2dec(imm)
+    #print(x)
     reg_data[reg_dict[rd]] = dec2bin_sext((PrgC+4),32)
-    PrgC = add_signed_binary(imm,dec2bin_sext(PrgC,32))
+    PrgC = add_signed_binary(dec2bin_sext(x,32),dec2bin_sext(PrgC,32))
     PrgC = PrgC[:-1] + '0'
     PrgC = bin2dec(PrgC)
     reg_print()
@@ -509,7 +523,7 @@ def instr_Ident(line):
     elif opcode == '0010111':
         U_type_enc(line)
 
-    elif opcode == '0100011':
+    elif opcode == '1101111':
         J_type_enc(line)
     
 
@@ -524,4 +538,5 @@ while(PrgC <= PrgCMax):
         break
 
     instr_Ident(line)
+
 
