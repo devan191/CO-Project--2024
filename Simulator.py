@@ -59,7 +59,7 @@ def mem_stat_print():
     outputstr = outputstr + '\n' + '0x0001007c:' + '0b'+ datamem_dict[65660]
     # print htake .write( )
     outputfile.write(outputstr)
-    print(outputstr)
+    
 
 
 
