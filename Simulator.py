@@ -143,7 +143,7 @@ def bin2dec(n):
 def twos_comp(binary_str):
     flipped_binary_str = ''.join('1' if bit == '0' else '0' for bit in binary_str)
     
-    twos_comp_result = bin2dec(flipped_binary_str)
+    twos_comp_result = bin2dec(flipped_binary_str) + 1
     twos_comp_result = dec2bin_sext(twos_comp_result,32)
 
     return twos_comp_result
@@ -291,7 +291,10 @@ def R_type_enc(line):
     elif func3 == '001':
         #doubt right now
         y = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
-        reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][y:] + '0' * y
+        #reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][y:] + '0' * y
+        x = bin2dec(reg_data[reg_dict[rs1]])
+        z = x << y
+        reg_data[reg_dict[rd]] = dec2bin_sext(z,32)
         
 
     elif func3 == '010':
@@ -312,7 +315,10 @@ def R_type_enc(line):
     elif func3 == '101':
         #doubt right now
         x = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
-        reg_data[reg_dict[rd]] =  '0' * x + reg_data[reg_dict[rs1]][:-x] 
+        #reg_data[reg_dict[rd]] =  '0' * x + reg_data[reg_dict[rs1]][:-x] 
+        y = bin2dec(reg_data[reg_dict[rs1]])
+        z = y >> x
+        reg_data[reg_dict[rd]] = dec2bin_sext(z,32)
 
     elif func3 == '110':
         reg_data[reg_dict[rd]] = ''.join('1' if bit1 == '1' or bit2 == '1' else '0' for bit1, bit2 in zip(reg_data[reg_dict[rs1]], reg_data[reg_dict[rs2]]))
@@ -356,12 +362,12 @@ def I_type_enc(line):
 
     elif func3 == '000':
         if opcode == '0010011':
-            print(x)
+            
             reg_data[reg_dict[rd]] = add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32))
-            print(reg_data[reg_dict[rd]])
+            
             PrgC = PrgC + 4
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
-            print(PrgC)
+            
             reg_print()
             
         else:
@@ -372,7 +378,7 @@ def I_type_enc(line):
             PrgC = PrgC[:-1] + '0'
             
             PrgC = bin2dec(PrgC)
-            print(PrgC)
+            
             
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
@@ -553,6 +559,7 @@ def instr_Ident(line):
         U_type_enc(line)
 
     elif opcode == '1101111':
+        
         J_type_enc(line)
     
 
