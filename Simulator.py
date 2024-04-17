@@ -381,7 +381,7 @@ def I_type_enc(line):
             
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
-            sys.exit()
+        
             
 
 
