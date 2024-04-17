@@ -229,7 +229,7 @@ reg_data = {
     't5':   '00000000000000000000000000000000',
     't6':   '00000000000000000000000000000000',
 }
-datamemc = 1
+
 datamem_dict = {
     65536: '00000000000000000000000000000000',
     65540: '00000000000000000000000000000000',
@@ -332,7 +332,6 @@ def R_type_enc(line):
         
 
 
-
 def I_type_enc(line):
     global outstr
     global PrgC
@@ -364,7 +363,7 @@ def I_type_enc(line):
         if opcode == '0010011':
             
             reg_data[reg_dict[rd]] = add_signed_binary(reg_data[reg_dict[rs1]],dec2bin_sext(x,32))
-            
+           
             PrgC = PrgC + 4
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             
@@ -530,6 +529,78 @@ def J_type_enc(line):
     reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
     reg_print()
 
+def rst_enc(line):
+    global outstr
+    global PrgC
+    global stackCounter
+
+    reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00001']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00010']] = '00000000000000000000000100000000'
+    reg_data[reg_dict['00011']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00100']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00101']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00110']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['00111']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01000']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01001']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01010']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01011']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01100']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01101']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01110']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['01111']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10000']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10001']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10010']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10011']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10100']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10101']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10110']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['10111']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11000']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11001']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11010']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11011']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11100']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11101']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11110']] = '00000000000000000000000000000000'
+    reg_data[reg_dict['11111']] = '00000000000000000000000000000000'
+
+    PrgC = PrgC + 4
+    reg_print()
+
+def rvrs_enc(line):
+    global outstr
+    global PrgC
+    global stackCounter
+
+    rs1 = line[12:17]
+    rd = line[20:25]
+
+    reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][::-1]
+    PrgC = PrgC + 4
+    reg_print()
+
+def mul_enc(line):
+    global outstr
+    global PrgC
+    global stackCounter
+
+    func7 = line[0:7]
+    rs2 = line[7:12]
+    rs1 = line[12:17]
+    func3 = line[17:20]
+    rd = line[20:25]
+
+    a = bin2dec(reg_data[reg_dict[rs1]])
+    b = bin2dec(reg_data[reg_dict[rs2]])
+    c = a*b
+    reg_data[reg_dict[rd]] = dec2bin_sext(c,32)
+
+    PrgC = PrgC + 4
+    reg_print()
+
 
 def instr_Ident(line):
     global PrgC
@@ -559,19 +630,32 @@ def instr_Ident(line):
         U_type_enc(line)
 
     elif opcode == '1101111':
-        
         J_type_enc(line)
-    
+
+
+    elif opcode == '0000000':
+        rst_enc(line)
+
+    elif opcode == '1000000':
+        mul_enc(line)
+
+    elif opcode == '1000001':
+        rvrs_enc(line)
 
 
 
 while(PrgC <= PrgCMax):
     line = lines_noblank[int(PrgC/4)]
-    if line == '00000000000000000000000001100011':
-
+    if line == '00000000000000000000000001100011': #virtual halt
         reg_print()
         mem_stat_print()
         break
+
+    if line == '11111111111111111111111111111111': #halt 
+        reg_print()
+        mem_stat_print()
+        break
+
 
     instr_Ident(line)
 
