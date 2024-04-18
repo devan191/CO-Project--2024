@@ -11,7 +11,6 @@ lines_noblank = [line for line in lines if line != '']
 # lines excludes all new line characters and empty lines
 
 
-
 PrgC = 0 # Program Counter
 
 PrgCMax = 4*(len(lines_noblank)-1)
@@ -139,6 +138,10 @@ def bin2dec(n):
         a = int(a, 2) + 1
         a = (-1)* a
     return a
+
+def unsign_bin2dec(n):
+    y = int(n,2)
+    return y
 
 def twos_comp(binary_str):
     flipped_binary_str = ''.join('1' if bit == '0' else '0' for bit in binary_str)
@@ -289,9 +292,9 @@ def R_type_enc(line):
                 reg_data[reg_dict[rd]] = add_signed_binary(reg_data[reg_dict[rs1]],x)
 
     elif func3 == '001':
-        #doubt right now
-        y = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
-        #reg_data[reg_dict[rd]] = reg_data[reg_dict[rs1]][y:] + '0' * y
+        
+        y = unsign_bin2dec(reg_data[reg_dict[rs2]][-5:])
+        
         x = bin2dec(reg_data[reg_dict[rs1]])
         z = x << y
         reg_data[reg_dict[rd]] = dec2bin_sext(z,32)
@@ -304,8 +307,8 @@ def R_type_enc(line):
             reg_data[reg_dict[rd]] = dec2bin_sext(1,32)
 
     elif func3 == '011':
-        a = abs(bin2dec(reg_data[reg_dict[rs1]]))
-        b = abs(bin2dec(reg_data[reg_dict[rs2]]))
+        a = unsign_bin2dec(reg_data[reg_dict[rs1]])
+        b = unsign_bin2dec(reg_data[reg_dict[rs2]])
         if a < b:
             reg_data[reg_dict[rd]] = dec2bin_sext(1,32)
     
@@ -313,12 +316,15 @@ def R_type_enc(line):
         reg_data[reg_dict[rd]] = ''.join('1' if bit1 != bit2 else '0' for bit1, bit2 in zip(reg_data[reg_dict[rs1]], reg_data[reg_dict[rs2]]))
 
     elif func3 == '101':
-        #doubt right now
-        x = abs(bin2dec(reg_data[reg_dict[rs2]][-5:]))
-        #reg_data[reg_dict[rd]] =  '0' * x + reg_data[reg_dict[rs1]][:-x] 
-        y = bin2dec(reg_data[reg_dict[rs1]])
-        z = y >> x
-        reg_data[reg_dict[rd]] = dec2bin_sext(z,32)
+        
+        x = unsign_bin2dec(reg_data[reg_dict[rs2]][-5:])
+         
+        #y = bin2dec(reg_data[reg_dict[rs1]])
+        #z = y >> x
+        z = '0'*x + reg_data[reg_dict[rs1]][0:-x]
+        #reg_data[reg_dict[rd]] = dec2bin_sext(z,32)
+        reg_data[reg_dict[rd]] = z
+
 
     elif func3 == '110':
         reg_data[reg_dict[rd]] = ''.join('1' if bit1 == '1' or bit2 == '1' else '0' for bit1, bit2 in zip(reg_data[reg_dict[rs1]], reg_data[reg_dict[rs2]]))
@@ -351,8 +357,8 @@ def I_type_enc(line):
         reg_print()
         
     elif func3 == '011':
-        a = abs(bin2dec(reg_data[reg_dict[rs1]]))
-        b = abs(bin2dec(imm))
+        a = unsign_bin2dec(reg_data[reg_dict[rs1]])
+        b = unsign_bin2dec(imm)
         if a < b:
             reg_data[reg_dict[rd]] = dec2bin_sext(1,32)
         PrgC = PrgC + 4
@@ -467,7 +473,7 @@ def B_type_enc(line):
             reg_print()
 
     elif func3 == '110':
-        if abs(a) < abs(b):
+        if unsign_bin2dec(a) < unsign_bin2dec(b):
             PrgC = PrgC + x
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
@@ -477,7 +483,7 @@ def B_type_enc(line):
             reg_print()
 
     elif func3 == '111':
-        if abs(a) >= abs(b):
+        if unsign_bin2dec(a) >= unsign_bin2dec(b):
             PrgC = PrgC + x
             reg_data[reg_dict['00000']] = '00000000000000000000000000000000'
             reg_print()
@@ -658,5 +664,4 @@ while(PrgC <= PrgCMax):
 
 
     instr_Ident(line)
-
-
+    
